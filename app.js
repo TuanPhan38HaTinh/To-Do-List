@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const {Schema} = require("mongoose");
+const _ = require("lodash");
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -46,18 +47,20 @@ app.get("/", function(req, res) {
 });
 
 app.get("/:customListName", (req, res) => {
-  const customListName = req.params.customListName;
-  const list = new List({
-    name: customListName,
-    items: defaultItems
-  });
+  const customListName = _.capitalize(req.params.customListName);
 
   List.findOne({name: customListName}, (err, foundList) => {
-    if (!foundList) {
-      list.save()
-      res.redirect("/" + customListName);
-    } else {
-      res.render("list", {listTitle: foundList.name, newListItems: foundList.items})
+    if (!err) {
+      if (!foundList) {
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+        list.save();
+        res.redirect("/" + customListName);
+      } else {
+        res.render("list", {listTitle: foundList.name, newListItems: foundList.items})
+      }
     }
   })
 
@@ -85,14 +88,26 @@ app.post("/", (req, res) => {
 
 app.post("/delete", (req, res) => {
   const checkedItemId = req.body.checkbox;
-  Item.findByIdAndDelete(checkedItemId, (err) => {
-    if (err) {
-      console.log(err);
-    }else {
-      console.log("Deleted one item!")
-    }
-  });
-  res.redirect("/")
+  const listName = req.body.listName;
+
+  if (listName === "Today") {
+    Item.findByIdAndDelete(checkedItemId, (err) => {
+      if (err) {
+        console.log(err);
+      }else {
+        console.log("Deleted one item!")
+      }
+    });
+    res.redirect("/")
+  }else {
+    List.findOneAndUpdate({name: listName}, {$pull: {items: {_id:checkedItemId}}}, (err, foundList) => {
+      console.log(Item);
+      if (!err) {
+        res.redirect("/" + listName);
+      }
+    });
+  }
+  console.log(listName)
 })
 
 app.listen(3000, () => console.log("Server started on port 3000"));
