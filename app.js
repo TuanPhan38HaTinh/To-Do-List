@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const {Schema} = require("mongoose");
 const _ = require("lodash");
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -111,6 +111,8 @@ app.post("/delete", (req, res) => {
   console.log(listName)
 })
 
-app.get('/cool', (req, res) => res.send(cool()));
 
-app.listen(PORT, () => console.log("Server started on port"));
+if (PORT == null || PORT == "") {
+  PORT = 3000;
+}
+app.listen(3000, () => console.log("Server started on port"));
