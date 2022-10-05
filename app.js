@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const {Schema} = require("mongoose");
 const _ = require("lodash");
-const PORT = process.env.PORT;
+let PORT = process.env.PORT;
 
 const app = express();
 app.set('view engine', 'ejs');
